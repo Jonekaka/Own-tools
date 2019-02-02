@@ -1,0 +1,595 @@
+import ctypes
+import inspect
+import pymssql
+import random
+import threading
+from tkinter import Label, Tk, Entry, Scrollbar, RIGHT, Text, LEFT, END, INSERT, Button, Toplevel, mainloop, Y, \
+    Radiobutton, IntVar
+import time
+import datetime
+import pygame
+import os
+import win32api
+from aip import AipSpeech
+# 导入tkinter模块的所有内容
+print('软件启动中....')
+server = 'USER-20181018AL'
+user = 'sa'
+password = 'sqlserver_li'
+database = 'aibinghaus'
+conn = pymssql.connect(server, user, password, database)
+cur1 = conn.cursor()
+name_index=['first_touch','two_touch','three_touch','four_touch','five_touch','six_touch','seven_touch','eight_touch']
+step_index=['one_touch_read1','two_touch_read1','three_touch_read1','four_touch_read1','five_touch_read1','six_touch_read1','seven_touch_read1','eight_touch_read1']
+root=Tk()
+frame1=(root)
+frame1.geometry('710x400')
+frame1.title("今天天气不错")
+lable_my1=Label(frame1,text='添加一个句子')
+lable_my1.place(x=0, y=0, anchor='nw')
+lable_my2=Label(frame1,text='添加一个解释')
+lable_my2.place(x=0, y=50, anchor='nw')
+text_sentence1=Entry(frame1)
+text_sentence1.place(x=100, y=13, anchor='w')
+text_explain2=Entry(frame1)
+text_explain2.place(x=100, y=60, anchor='w')
+# 上面是添加任务框体，底下是内容窗体
+matter_lable_my1=Label(frame1,text='句子')
+matter_lable_my1.place(x=0, y=145, anchor='nw')
+matter_lable_my2=Label(frame1,text='解释')
+matter_lable_my2.place(x=0, y=185, anchor='nw')
+
+matter_text_sentence1=Entry(frame1)
+matter_text_sentence1.place(x=100, y=155, anchor='w')
+matter_text_explain2=Entry(frame1)
+matter_text_explain2.place(x=100, y=195, anchor='w')
+# 滚动栏创建
+S = Scrollbar(root)
+S.pack(side=RIGHT, fill=Y)
+# 操作提示窗体
+remander__lable_my1=Label(frame1,text='操作状态栏')
+remander__lable_my1.place(x=353, y=13, anchor='e')
+remander__text_my1=Text(frame1)
+remander__text_my1.pack(side=LEFT, fill=Y)
+remander__text_my1.place(x=290, y=150, anchor='w',height=210, width=400)
+S.config(command=remander__text_my1.yview)
+remander__text_my1.config(yscrollcommand=S.set)
+quote = "这里是操作状态记录栏\n人的大脑是一个很迷人的区域，记忆有着规律，人世之间莫过于此，顺势而行则无所不破\n"
+remander__text_my1.insert(END, quote)
+# 读秒的框体
+mysecondes = '距离任务执行还有(秒)'
+seconde_lable_my1 = Label(frame1, text=mysecondes)
+seconde_lable_my1.place(x=287, y=22, anchor='nw')
+seconds__text_my1=Text(frame1)
+seconds__text_my1.pack(side=LEFT, fill=Y)
+seconds__text_my1.place(x=415, y=34, anchor='w',height=20, width=100)
+v=IntVar(0)
+# 置顶标签
+my_up = '置顶'
+my_up_lable_my1 = Label(frame1, text=my_up)
+my_up_lable_my1.place(x=574, y=22, anchor='nw')
+# 状态时间栏目
+# ,show='*'
+# my_sentence =''
+# my_explain = ''
+# frame2 = (root)
+# frame2_text_sentence1 = Entry(frame2)
+# frame2_text_explain2 = Entry(frame2)
+def doallthings():
+    remander__text_my1.insert(INSERT, '\n【【开启——任务创建】】\n')
+    print('开始创建任务，开始创建数据.....')
+    # 先收集现在的时间，字符串格式的写入数据库，时间格式用于计算
+    nowTime_str = datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S')  # 现在
+    nowbase = datetime.datetime.now()
+    F_1_5M_str = (nowbase + datetime.timedelta(minutes=5)).strftime('%Y-%m-%d %H:%M:%S')  # 未来5分钟后
+    F_time_1 = nowbase + datetime.timedelta(minutes=5)
+    F_2_30M_str= (F_time_1 + datetime.timedelta(minutes=30)).strftime('%Y-%m-%d %H:%M:%S')  # 未来30分钟后
+    F_time_2 = F_time_1 + datetime.timedelta(minutes=30)
+    F_3_12H_str = (F_time_2 + datetime.timedelta(hours=12)).strftime('%Y-%m-%d %H:%M:%S')  # 未来12小时后
+    F_time_3 = F_time_2 + datetime.timedelta(hours=12)
+    F_4_1d_str = (F_time_3+ datetime.timedelta(days=1)).strftime('%Y-%m-%d %H:%M:%S')  # 未来1天后
+    F_time_4 = F_time_3 + datetime.timedelta(days=1)
+    F_5_2d_str = (F_time_4+ datetime.timedelta(days=2)).strftime('%Y-%m-%d %H:%M:%S')  # 未来2天后
+    F_time_5 = F_time_4 + datetime.timedelta(days=2)
+    F_6_4d_str = (F_time_5 + datetime.timedelta(days=4)).strftime('%Y-%m-%d %H:%M:%S')  # 未来4天后
+    F_time_6 = F_time_5 + datetime.timedelta(days=4)
+    F_7_7d_str = (F_time_6 + datetime.timedelta(days=7)).strftime('%Y-%m-%d %H:%M:%S')  # 未来7天后
+    F_time_7 = F_time_6+ datetime.timedelta(days=7)
+    F_8_15d_str = (F_time_7 + datetime.timedelta(days=15)).strftime('%Y-%m-%d %H:%M:%S')  # 未来15天后
+    F_time_8 = F_time_7 + datetime.timedelta(days=15)
+    getsentence_str=text_sentence1.get()
+    getexplain2_str=text_explain2.get()
+    # 如果有音频文件，就将初始化时间的时间戳作为音频名字使用，否则跳过这段
+    filepath = "C:\\Users\\Administrator\\Desktop\\my_music\\1.MP3"
+    file_real = os.path.exists(filepath)
+    try:
+        if  file_real:
+            remander__text_my1.insert(INSERT, '\n【【你正在插入的任务有音频关联哦】】！！\n')
+            my_path="C:\\Users\\Administrator\\Desktop\\my_music\\"
+            oldname = os.path.splitext(filepath)
+            timeArray = time.strptime(nowTime_str, "%Y-%m-%d %H:%M:%S")
+            print (timeArray)
+            # timeArray可以调用tm_year等
+            print (timeArray.tm_year)
+            # 转为时间戳
+            timeStamp = int(time.mktime(timeArray))
+            print (timeStamp)
+            print(type(timeStamp))
+            new_name='%d'%(timeStamp)
+            print(oldname[0])
+            print(oldname[1])
+            os.rename(oldname[0]+oldname[1],my_path+new_name+oldname[1])
+            remander__text_my1.insert(INSERT, '\n【【这个任务启动的时候会有音频播放提示】】！！\n')
+        else:
+            remander__text_my1.insert(INSERT, '\n【【这个任务没有音频文件相互关联】】！！\n')
+    except:
+        remander__text_my1.insert(INSERT, '\n【【关联的音频文件被占用了，赶紧退出占用吧】】！！\n')
+    if getsentence_str:
+        print(getsentence_str)
+        print(getexplain2_str)
+        cur1.execute("INSERT INTO aibinghaus_use  VALUES (%s,%s,%s,%s,%d,%s,%d,%d,%s,%d,%d,%s,%d,%d,%s,%d,%d,%s,%d,%d,%s,%d,%d,%s,%d,%d,%s,%d,%d,%d)",(getsentence_str,getexplain2_str,nowTime_str,nowTime_str,0,F_1_5M_str,0,1,F_2_30M_str,0,2,F_3_12H_str,0,3,F_4_1d_str,0,4,F_5_2d_str,0,5,F_6_4d_str,0,6,F_7_7d_str,0,7,F_8_15d_str,0,8,0) )  # 插入命令
+        conn.commit()
+        print('任务初始化数据-------写入数据库写入成功')
+        remander__text_my1.insert(INSERT, '\n【【数据写入成功】】！！\n')
+    else:
+        remander__text_my1.insert(INSERT, '\n【【插入的任务数据不能是空的】】！！！！\n')
+        print('数据是空的，任务取消')
+def updata_tesk():
+    remander__text_my1.insert(INSERT, '\n【【刷新——任务状态】】\n')
+    step = []
+    save_time = []
+    print('正在查找上一次的断点时间...')
+    cur1.execute("select last_status_time,last_status_step from aibinghaus_use")
+    row = cur1.fetchone()
+    print('已经找到，开始读取时间与步伐进度.....')
+    print('可能是刚刚插入的数据')
+    print(row[0],row[1])
+    print(type(row[0]), type(row[1]))
+    # 终于解决了数据库第一行的读取问题
+    if row[1]<8:
+        save_time.append(row[0])
+        step.append(row[1])
+    for row in cur1:
+        # 对于那些已经超过15天的视为已经完成
+        if row[1] < 8:
+            print(row[0], row[1])
+            save_time.append(row[0])
+            step.append(row[1])
+    print('开始输出断点的时间与步伐进度：')
+    for i in save_time,step:
+        i[:]
+    print('断点数据读取成功，开始获得下一次任务的时间，如果没有则任务结束')
+    # 用于统计各个任务时间间隔的列表，超过18小时的不添加，夜间的不启动
+    time_interval = []
+    for i in range(0, len(step)):
+        # # 获得下一次要执行时间的名字
+        print(step[i])
+        step_name = name_index[step[i]]
+        print('第%d步伐，任务最初时间为%s'%(step[i], save_time[i]))
+        print('开始查询下一次的时间，第%d次'%(i))
+        my_code_sql = "SELECT %s FROM aibinghaus_use where aibinghaus_use.last_status_time='%s'" % (step_name, save_time[i])
+        cur1.execute(my_code_sql)
+        row = cur1.fetchone()
+        # print(row[0])
+        # print(type(row[0]))
+        # 将字符串转换为时间日期格式
+        t = time.strptime(row[0], "%Y-%m-%d %H:%M:%S")
+        y, m, d, H, M, S = t[0:6]
+        my_date = datetime.datetime(y, m, d, H, M, S)
+        print('第%d次的时间为:'%(i))
+        print(my_date)
+        # print(type(my_date))
+        nowTime_str = datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S')  # 现在
+        print('此时的时间为：')
+        print(nowTime_str)
+        # 原来可以直接转换成s，我真的选择了一个简单的语言
+        short_result = int((my_date-datetime.datetime.now()).total_seconds())
+        # if short_result<65000:
+        print('数据库此时插入任务时间间隔的数据%d' % (short_result))
+        # print(type(short_result))
+        next_time=my_date.strftime('%Y-%m-%d %H:%M:%S')  # 下一次任务时间点
+        print('对应的下一次任务的执行时间断点%s' % (next_time))
+        my_code_sql_time_temp = "update aibinghaus_use set time_wait=%d where aibinghaus_use.last_status_time='%s'" % (short_result, save_time[i])
+        # 原来是没有将命令通过游标传递出去
+        cur1.execute(my_code_sql_time_temp)
+        time_interval.append(short_result)
+        conn.commit()
+    # print('读取下一个时间点的任务列表，并比较最小.')
+    # for j in time_interval:
+    #     j[:]
+    if time_interval:
+        global  min_time
+        min_time = min(time_interval)
+        min_count=time_interval.count(min_time)
+        # 这个地方是为了维持最小值得唯一性
+        if min_count>1:
+            print('如果这个地方被启动，那么这个是为了维持最小值的唯一性')
+            my_sql_min_time_last="SELECT last_status_time  FROM aibinghaus_use where time_wait=%d"%(min_time)
+            cur1.execute(my_sql_min_time_last)
+            row = cur1.fetchone()
+            last_time_save=[]
+            for row in cur1:
+                print('太奇怪了，这些都是相同的时间间隔的断点时间%s,那么只好改变他了'%(row[0]))
+                last_time_save.append(row[0])
+            del last_time_save[0]
+            for last_li in last_time_save:
+                print(last_li[0])
+                add_time_my = random.randint(1, 100)
+                my_sql_min_time_change_last = "update aibinghaus_use set time_wait=(select time_wait from aibinghaus_use where last_status_time='%s')+%d  where last_status_time='%s'" % (last_li[0],add_time_my,last_li[0])
+                cur1.execute(my_sql_min_time_change_last)
+                conn.commit()
+        if time_interval:
+            print('最短时间为%d'%(min_time))
+            print('开始时间最短任务的休眠，唤醒后将会提示内容，正在等待唤醒......')
+            # my_sql_real_step="select last_status_step from aibinghaus_use where time_wait=%d"%(min_time)
+            # cur1.execute(my_sql_real_step)
+            # row = cur1.fetchone()
+            # next_step=row[0]
+            # # 因为索引是从0开始的，那么名字根据上一次断点的步伐就可以找到下一次的时间点名字
+            # print('为了得到下一次的时间，这是下一次的时间步伐%d'%(row[0]+1))
+            # print('此时步伐的名字%s'%(name_index[next_step]))
+            # my_sql_real_next_time="select %s from aibinghaus_use where time_wait=%d"%(name_index[next_step],min_time)
+            # print(my_sql_real_next_time)
+            # cur1.execute(my_sql_real_next_time)
+            # row = cur1.fetchone()
+            # print('真正的下一次的时间%s' % (row[0]))
+            # time_my =row[0]
+            # t = time.strptime(time_my, "%Y-%m-%d %H:%M:%S")
+            # y, m, d, H, M, S = t[0:6]
+            # my_date = datetime.datetime(y, m, d, H, M, S)
+            # print(my_date)
+            if min_time<0:
+                time_do=0
+                remander__text_my1.insert(INSERT, "\n【【新的任务等待时间为——%d】】\n"%(time_do))
+            else:
+                time_do =min_time
+                    # min_time
+                remander__text_my1.insert(INSERT, "\n【【新的任务等待时间为——%d】】\n" % (time_do))
+            print('加载的时间是%d'%(time_do))
+            for i in range(time_do):
+                rest_time=time_do-i
+                seconds_str='%d'%(rest_time)
+                seconds__text_my1.delete('1.0','end')
+                seconds__text_my1.insert(INSERT, seconds_str)
+                time.sleep(1)
+            seconds__text_my1.delete('1.0', 'end')
+            seconds__text_my1.insert(INSERT, '0')
+            print('已经被唤醒，内容正在加载....')
+            my_code_sql_matter = "SELECT my_words,words_means FROM aibinghaus_use where aibinghaus_use.time_wait='%d'" % (min_time)
+            row = cur1.execute(my_code_sql_matter)
+            for row in cur1:
+                remander__text_my1.insert(INSERT, '\n【【任务——提示】】！！—！！！！—！！\n')
+                remander__text_my1.insert(INSERT, '\n【【音乐——播放】】\n')
+                file = r'C:\\Users\\Administrator\\Desktop\\my_music\\reminder\\ww_li.wav'
+                pygame.mixer.init()
+                track = pygame.mixer.music.load(file)
+                pygame.mixer.music.play()
+                time.sleep(3)
+                pygame.mixer.music.stop()
+                print(row[0], row[1])
+                matter_text_sentence1.insert('insert',row[0])
+                matter_text_sentence1.delete('0', 'end')
+                matter_text_sentence1.insert('insert', row[0])
+                # 全局解释终于添加成功
+                global my_sentence
+                my_sentence=row[0]
+                global my_explain
+                my_explain= row[1]
+                # matter_text_explain2.insert('insert', row[1])
+                print(my_explain)
+                print('正在修改相应的任务时间步伐，+1，同时修改任务时间点的读取状态.')
+                my_code_sql_last_add = "update aibinghaus_use set last_status_step=(select last_status_step from aibinghaus_use where aibinghaus_use.time_wait=%d)+1 where aibinghaus_use.time_wait=%d" % (
+                min_time, min_time)
+                cur1.execute(my_code_sql_last_add)
+                my_code_sql_select_step = 'select last_status_step from aibinghaus_use where aibinghaus_use.time_wait=%d' % (
+                    min_time)
+                cur1.execute(my_code_sql_select_step)
+                row = cur1.fetchone()
+                print('为了修改任务的可读状态，打印此时最小间隔的的状态步伐......')
+                print(row[0])
+                print('打印步伐索引名字')
+                print(step_index[row[0] - 1])
+                print('修改此次任务的可读标志，读取过之后不可读')
+                my_code_sql_readed = "update aibinghaus_use  set %s =1 where time_wait = %d" % (
+                step_index[row[0] - 1], min_time)
+                cur1.execute(my_code_sql_readed)
+                conn.commit()
+                my_sql_real_step = "select last_status_time from aibinghaus_use where time_wait=%d" % (min_time)
+                cur1.execute(my_sql_real_step)
+                row = cur1.fetchone()
+                my_last_music_time_str = row[0]
+                timeArray = time.strptime(my_last_music_time_str, "%Y-%m-%d %H:%M:%S")
+                # 转为时间戳
+                timeStamp = int(time.mktime(timeArray))
+                print(timeStamp)
+                print(type(timeStamp))
+                music_name = '%d.mp3' % (timeStamp)
+                my_music_path = "C:\\Users\\Administrator\\Desktop\\my_music\\%s" % (music_name)
+                file_real = os.path.exists(my_music_path)
+                if file_real:
+                    remander__text_my1.insert(INSERT, '\n【【这个任务有音频解释文件哦，点击播放】】\n')
+                else:
+                    remander__text_my1.insert(INSERT, '\n【【这个任务没有音频解释文件，点了也没用】】\n')
+
+        else:
+            print('没有可以执行的任务')
+            remander__text_my1.insert(INSERT, '\n【【没有可以执行的任务】】\n')
+    else:
+        remander__text_my1.insert(INSERT, '\n【【没有可以执行的任务】】\n')
+def forget_again():
+    if my_explain:
+        my_sql_real_step = "select last_status_time from aibinghaus_use where time_wait=%d" % (min_time)
+        cur1.execute(my_sql_real_step)
+        row = cur1.fetchone()
+        my_last_music_time_str = row[0]
+        timeArray = time.strptime(my_last_music_time_str, "%Y-%m-%d %H:%M:%S")
+        # 转为时间戳
+        timeStamp = int(time.mktime(timeArray))
+        print(timeStamp)
+        print(type(timeStamp))
+        music_name = '%d.mp3' % (timeStamp)
+        my_music_path = "C:\\Users\\Administrator\\Desktop\\my_music\\%s" % (music_name)
+        file_real = os.path.exists(my_music_path)
+        flag_music=0
+        if file_real:
+            remander__text_my1.insert(INSERT, '\n【【这个旧的任务有音频文件，那么重新关联】】\n')
+            flag_music=1
+        else:
+            remander__text_my1.insert(INSERT, '\n【【这个旧的任务没有音频文件，哈哈哈】】\n')
+            flag_music=0
+        remander__text_my1.insert(INSERT, '\n【【因为遗忘，将旧的任务变成新的任务】】\n')
+        print('为那些遗忘的任务重新创建')
+        nowTime_str = datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S')  # 现在
+        nowbase = datetime.datetime.now()
+        F_1_5M_str = (nowbase + datetime.timedelta(minutes=5)).strftime('%Y-%m-%d %H:%M:%S')  # 未来5分钟后
+        F_time_1 = nowbase + datetime.timedelta(minutes=5)
+        F_2_30M_str = (F_time_1 + datetime.timedelta(minutes=30)).strftime('%Y-%m-%d %H:%M:%S')  # 未来30分钟后
+        F_time_2 = F_time_1 + datetime.timedelta(minutes=30)
+        F_3_12H_str = (F_time_2 + datetime.timedelta(hours=12)).strftime('%Y-%m-%d %H:%M:%S')  # 未来12小时后
+        F_time_3 = F_time_2 + datetime.timedelta(hours=12)
+        F_4_1d_str = (F_time_3 + datetime.timedelta(days=1)).strftime('%Y-%m-%d %H:%M:%S')  # 未来1天后
+        F_time_4 = F_time_3 + datetime.timedelta(days=1)
+        F_5_2d_str = (F_time_4 + datetime.timedelta(days=2)).strftime('%Y-%m-%d %H:%M:%S')  # 未来2天后
+        F_time_5 = F_time_4 + datetime.timedelta(days=2)
+        F_6_4d_str = (F_time_5 + datetime.timedelta(days=4)).strftime('%Y-%m-%d %H:%M:%S')  # 未来4天后
+        F_time_6 = F_time_5 + datetime.timedelta(days=4)
+        F_7_7d_str = (F_time_6 + datetime.timedelta(days=7)).strftime('%Y-%m-%d %H:%M:%S')  # 未来7天后
+        F_time_7 = F_time_6 + datetime.timedelta(days=7)
+        F_8_15d_str = (F_time_7 + datetime.timedelta(days=15)).strftime('%Y-%m-%d %H:%M:%S')  # 未来15天后
+        print(my_explain)
+        print(my_sentence)
+        if flag_music==1:
+            remander__text_my1.insert(INSERT, '\n【【新的任务音频文件绑定中...】】\n')
+            my_path = "C:\\Users\\Administrator\\Desktop\\my_music\\"
+            oldname = os.path.splitext(my_music_path)
+            timeArray = time.strptime(nowTime_str, "%Y-%m-%d %H:%M:%S")
+            print(timeArray)
+            # timeArray可以调用tm_year等
+            print(timeArray.tm_year)
+            # 转为时间戳
+            timeStamp = int(time.mktime(timeArray))
+            print(timeStamp)
+            print(type(timeStamp))
+            new_name = '%d' % (timeStamp)
+            print(oldname[0])
+            print(oldname[1])
+            os.rename(oldname[0] + oldname[1], my_path + new_name + oldname[1])
+            remander__text_my1.insert(INSERT, '\n【【绑定完成】】\n')
+        else:
+            remander__text_my1.insert(INSERT, '\n【【没有音频那就不绑定了】】\n')
+        my_sql_forget="update aibinghaus_use set start_time = '%s', last_status_time = '%s', last_status_step = 0, first_touch ='%s', one_touch_read1 = 0, one_touch_step2 = 1, two_touch = '%s', two_touch_read1 = 0, two_touch_step2 = 2, three_touch ='%s', three_touch_read1 = 0, three_touch_step2 = 3, four_touch ='%s', four_touch_read1 = 0, four_touch_step2 = 4, five_touch = '%s', five_touch_read1 = 0, five_touch_step2 = 5, six_touch ='%s', six_touch_read1 = 0, six_touch_step2 = 6, seven_touch ='%s', seven_touch_read1 = 0, seven_touch_step2 = 7, eight_touch = '%s', eight_touch_read1 = 0, eight_touch_step2 = 8, time_wait = 0 where my_words = '%s' and words_means ='%s'"%(nowTime_str,nowTime_str,F_1_5M_str,F_2_30M_str ,F_3_12H_str,F_4_1d_str,F_5_2d_str,F_6_4d_str,F_7_7d_str,F_8_15d_str,my_sentence,my_explain)
+        print(my_sql_forget)
+        cur1.execute(my_sql_forget)
+        conn.commit()
+    else:
+        print('没有到时的任务，也没法忘记啊')
+        remander__text_my1.insert(INSERT, '\n【【任务还没到，不能作弊直接刷新啊，无法忘记】】\n')
+my_explain=matter_text_explain2.get()
+print(my_explain)
+def add_explain():
+    if my_explain:
+        remander__text_my1.insert(INSERT,'\n【【添加——解释】】\n')
+        matter_text_explain2.insert('insert', my_explain)
+        matter_text_explain2.delete('0', 'end')
+        matter_text_explain2.insert('insert',my_explain)
+    else:
+        print('解释没有啊，任务没有到吧')
+        remander__text_my1.insert(INSERT, '\n【【解释没有啊，任务没有到吧】】\n')
+def delete_explain():
+    remander__text_my1.insert(INSERT, '\n【【删除——解释】】\n')
+    matter_text_explain2.delete('0','end')
+def delete_operation_status():
+    # 和那个单行的还不一样
+    remander__text_my1.delete('1.0', 'end')
+    remander__text_my1.insert(INSERT, '\n【【删除——操作状态】】\n')
+    remander__text_my1.insert(INSERT, '人的大脑是一个很迷人的区域，记忆有着规律，人世之间莫过于此，顺势而行则无所不破\n')
+def enlarge_matter():
+    remander__text_my1.insert(INSERT, '\n【【放大——任务内容】】\n')
+    top = Toplevel()
+    top.title('任务内容到时全息开启')
+    top.geometry('710x400')
+    enlarge_lable_my1 = Label(top, text='任务句子')
+    enlarge_lable_my1.place(x=0, y=0, anchor='nw')
+    top_matter__text_my1 = Text(top)
+    top_matter__text_my1.place(x=355, y=190, anchor='s', height=170, width=700)
+    enlarge_lable_my2 = Label(top, text='解释句子')
+    enlarge_lable_my2.place(x=0, y=185, anchor='nw')
+    top_matter__text_my2 = Text(top)
+    top_matter__text_my2.place(x=355, y=205, anchor='n', height=190, width=700)
+    try:
+        top_matter__text_my1.insert('insert',  my_sentence)
+        top_matter__text_my1.delete('1.0', 'end')
+        top_matter__text_my1.insert('insert',  my_sentence)
+        top_matter__text_my2.insert('insert', my_explain)
+        top_matter__text_my2.delete('1.0', 'end')
+        top_matter__text_my2.insert('insert', my_explain)
+    except :
+        print('没有内容')
+        remander__text_my1.insert(INSERT, '\n【【没有内容哦，放大也没用】】！！\n')
+# def matter_face():
+#     frame2.geometry('300x300')
+#     frame2.title("内容界面")
+#     frame2_lable_my1 = Label(frame2, text='句子')
+#     frame2_lable_my1.place(x=0, y=0, anchor='nw')
+#     frame2_lable_my2 = Label(frame2, text='解释')
+#     frame2_lable_my2.place(x=0, y=50, anchor='nw')
+#     # frame2_text_sentence1 = Entry(frame2)
+#     frame2_text_sentence1.place(x=100, y=13, anchor='w')
+#     # frame2_text_explain2 = Entry(frame2)
+#     frame2_text_explain2.place(x=100, y=60, anchor='w')
+#     frame2_theButton = Button(frame2, text="添加-解释", command=add_explain)  # 按下按钮
+#     frame2_theButton.place(x=150, y=70, anchor='n')
+#     frame2_text_explain2.insert('insert',my_sentence)
+def clear_add():
+    remander__text_my1.insert(INSERT, '\n【【删除——任务框（添加功能）中的内容】】\n')
+    text_sentence1.delete('0','end')
+    text_explain2.delete('0','end')
+def play_sentence():
+    music_baidu=matter_text_sentence1.get()
+    if music_baidu:
+        remander__text_my1.insert(INSERT, '\n【【稍等，要播放句子了哦】】！！\n')
+        APP_ID = '14296390'  # 引号之间填写之前在ai平台上获得的参数
+        API_KEY = 'xZZ3Uyta4LpdP2EoVtIyZcqF'  # 如上
+        SECRET_KEY = 'SLzKhVOB72mc4woTG8XplAGryxNkiXrz '  # 如上
+        client = AipSpeech(APP_ID, API_KEY, SECRET_KEY)
+        lan = music_baidu
+        result = client.synthesis(lan, 'zh', 1, {'vol': 5, 'per': 4, 'spd': 5})
+        '''
+        固定值zh。语言选择,目前只有中英文混合模式，填写固定值zh
+        客户端类型选择，web端填写固定值1
+        spd语速，取值0-15，默认为5中语速(选填)
+        pit音调，取值0-15，默认为5中语调（选填）
+        vol音量，取值0-15，默认为5中音量（选填）
+        per发音人选择, 0为普通女声，1为普通男生，3为情感合成-度逍遥，4为情感合成-度丫丫，默认为普通女声
+        '''
+        # 识别正确返回语音二进制 错误则返回dict 参照下面错误码
+        if not isinstance(result, dict):
+            with open('C:\\Users\\Administrator\\Desktop\\my_music\\111111111文字转语音临时会所\\a.mp3', 'wb') as f:
+                f.write(result)
+        win32api.ShellExecute(0, 'open', 'C:\\Users\\Administrator\\Desktop\\my_music\\111111111文字转语音临时会所\\a.mp3', '', '', 0)
+    else:
+        remander__text_my1.insert(INSERT, '\n【【句子是空的哦，没法播放】】！！\n')
+def play_explain():
+    music_baidu=matter_text_explain2.get()
+    if music_baidu:
+        remander__text_my1.insert(INSERT, '\n【【稍等，要播放解释了哦】】！！\n')
+        APP_ID = '14296390'  # 引号之间填写之前在ai平台上获得的参数
+        API_KEY = 'xZZ3Uyta4LpdP2EoVtIyZcqF'  # 如上
+        SECRET_KEY = 'SLzKhVOB72mc4woTG8XplAGryxNkiXrz '  # 如上
+        client = AipSpeech(APP_ID, API_KEY, SECRET_KEY)
+        lan = music_baidu
+        result = client.synthesis(lan, 'zh', 1, {'vol': 5, 'per': 4, 'spd': 5})
+        '''
+        固定值zh。语言选择,目前只有中英文混合模式，填写固定值zh
+        客户端类型选择，web端填写固定值1
+        spd语速，取值0-15，默认为5中语速(选填)
+        pit音调，取值0-15，默认为5中语调（选填）
+        vol音量，取值0-15，默认为5中音量（选填）
+        per发音人选择, 0为普通女声，1为普通男生，3为情感合成-度逍遥，4为情感合成-度丫丫，默认为普通女声
+        '''
+        # 识别正确返回语音二进制 错误则返回dict 参照下面错误码
+        if not isinstance(result, dict):
+            with open('C:\\Users\\Administrator\\Desktop\\my_music\\111111111文字转语音临时会所\\b.mp3', 'wb') as f:
+                f.write(result)
+        win32api.ShellExecute(0, 'open', 'C:\\Users\\Administrator\\Desktop\\my_music\\111111111文字转语音临时会所\\b.mp3', '', '', 0)
+    else:
+        remander__text_my1.insert(INSERT, '\n【【解释是空的哦，没法播放】】！！\n')
+
+def xxx():
+    theButton2.configure(state='disable')
+    global r
+    r = threading.Thread(target=updata_tesk)
+    r.start()
+
+def play_use_wangyi():
+    try:
+        my_sql_real_step = "select last_status_time from aibinghaus_use where time_wait=%d" % (min_time)
+        cur1.execute(my_sql_real_step)
+        row = cur1.fetchone()
+        my_last_music_time_str = row[0]
+        timeArray = time.strptime(my_last_music_time_str, "%Y-%m-%d %H:%M:%S")
+        # 转为时间戳
+        timeStamp = int(time.mktime(timeArray))
+        print(timeStamp)
+        print(type(timeStamp))
+        music_name = '%d.MP3' % (timeStamp)
+        my_music_path = "C:\\Users\\Administrator\\Desktop\\my_music\\%s" % (music_name)
+        file_real = os.path.exists(my_music_path)
+        if file_real:
+            win32api.ShellExecute(0, 'open',my_music_path , '','',0)
+        else:
+            remander__text_my1.insert(INSERT, '\n【【没有相关的音乐可以播放哦】】！！\n')
+    except:
+        print('任务还没有开始，想听自己添加')
+        remander__text_my1.insert(INSERT, '\n【【任务还没有开始，想听自己添加】】！！\n')
+def play_use_wangyi_threading():
+    p = threading.Thread(target=play_use_wangyi)
+    p.start()
+
+def play_play_explain_threading():
+    e = threading.Thread(target=play_explain)
+    e.start()
+
+def play_sentence_threading():
+    s = threading.Thread(target=play_sentence)
+    s.start()
+def _async_raise(tid, exctype):
+    """raises the exception, performs cleanup if needed"""
+    tid = ctypes.c_long(tid)
+    if not inspect.isclass(exctype):
+        exctype = type(exctype)
+    res = ctypes.pythonapi.PyThreadState_SetAsyncExc(tid, ctypes.py_object(exctype))
+    if res == 0:
+        raise ValueError("invalid thread id")
+    elif res != 1:
+        # """if it returns a number greater than one, you're in trouble,
+        # and you should call it again with exc=NULL to revert the effect"""
+        ctypes.pythonapi.PyThreadState_SetAsyncExc(tid, None)
+        raise SystemError("PyThreadState_SetAsyncExc failed")
+def stop_update_tesk_thread():
+    theButton2.configure(state='normal')
+    try:
+        remander__text_my1.insert(INSERT, '\n【【结束任务】】！！\n')
+        _async_raise(r.ident, SystemExit)
+        remander__text_my1.insert(INSERT, '\n【【任务被终止成功，开始新的任务再刷新吧】】！！\n')
+        seconds__text_my1.delete('1.0', 'end')
+    except:
+        print('任务还没有结束，你想干什么！')
+        remander__text_my1.insert(INSERT, '\n【【任务还没有结束，你想干什么！】】！！\n')
+def UP_win():
+    frame1.wm_attributes('-topmost', 1)
+    remander__text_my1.insert(INSERT, '\n【【窗口已经置顶】】！！\n')
+def Down_win():
+    frame1.wm_attributes('-topmost', 0)
+    remander__text_my1.insert(INSERT, '\n【【窗口取消置顶】】！！\n')
+Radio_my1=Radiobutton(frame1, text='是', variable=v, value=1,command= UP_win)
+Radio_my1.place(x=630, y=19, anchor='n')
+Radio_my2=Radiobutton(frame1, text='否', variable=v, value=0,command= Down_win)
+Radio_my2.place(x=670, y=19, anchor='n')
+theButton1 = Button(frame1, text="添加-艾宾浩斯", command=doallthings)  # 按下按钮
+theButton1.place(x=142, y=70, anchor='n')
+theButton3 = Button(frame1, text="清除", command=clear_add)  # 按下按钮
+theButton3.place(x=225, y=70, anchor='n')
+theButton2 = Button(frame1, text="刷新-艾宾", command=xxx)  # 按下按钮
+theButton2.place(x=130, y=110, anchor='n')
+theButton4 = Button(frame1, text="播放", command=play_sentence_threading)  # 按下按钮
+theButton4.place(x=225, y=110, anchor='n')
+theButton5 = Button(frame1, text="结束", command=stop_update_tesk_thread)  # 按下按钮
+theButton5.place(x=185, y=110, anchor='n')
+matter_theButton1 = Button(frame1, text="添加-解释", command=add_explain)  # 按下按钮
+matter_theButton1.place(x=130, y=220, anchor='n')
+matter_theButton2= Button(frame1, text="删除-解释", command=delete_explain)  # 按下按钮
+matter_theButton2.place(x=210, y=220, anchor='n')
+matter_theButton2= Button(frame1, text="忘记了，变成新的任务", command=forget_again)  # 按下按钮
+matter_theButton2.place(x=170, y=260, anchor='n')
+operation_status_theButton2= Button(frame1, text="清除操作记录", command=delete_operation_status)  # 按下按钮
+operation_status_theButton2.place(x=642, y=258, anchor='n')
+enlarge_status_theButton1= Button(frame1, text="任务内容全息展示", command=enlarge_matter)  # 按下按钮
+enlarge_status_theButton1.place(x=340, y=258, anchor='n')
+enlarge_status_theButton1= Button(frame1, text="网易云播放音频文件", command=play_use_wangyi_threading)  # 按下按钮
+enlarge_status_theButton1.place(x=455, y=258, anchor='n')
+enlarge_status_theButton1= Button(frame1, text="播放句子解释", command=play_play_explain_threading)  # 按下按钮
+enlarge_status_theButton1.place(x=557, y=258, anchor='n')
+print('软件启动完成，等待命令')
+mainloop()
+# ------------界面部分-------------------
